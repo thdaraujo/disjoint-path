@@ -34,6 +34,10 @@ public class Graph implements IGraph {
 	public boolean containsEdge(Edge arg0) {
 		return this.edges.containsKey(arg0);
 	}
+	
+	public boolean containsNode(Node arg0){
+		return this.nodes.containsKey(arg0);
+	}
 
 	@Override
 	public Collection<Edge> getAdjacentEdges(Node arg0) {
@@ -43,8 +47,11 @@ public class Graph implements IGraph {
 
 	@Override
 	public Collection<Node> getAdjacentNodes(Node arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		if(!containsNode(arg0)){
+			System.out.println("node not found!");
+			return null;
+		}
+		return this.adjNodes.get(arg0);
 	}
 
 	@Override
@@ -53,10 +60,22 @@ public class Graph implements IGraph {
 	}
 	
 	public void addNode(Node n){
-		// TODO
+		this.nodes.put(n, n);
+		this.adjNodes.put(n, new LinkedList<Node>());
+		this.V++;
 	}
 	
 	public void addEdge(Edge e){
-		// TODO
+		Node from = e.getFrom();
+		Node to = e.getTo();
+		
+		if(!containsNode(from) || !containsNode(to)){
+			System.out.println("node from or to not found!");
+			return;
+		}
+		
+		this.adjNodes.get(from).add(to);
+		this.edges.put(e, e);
+		this.E++;
 	}
 }
