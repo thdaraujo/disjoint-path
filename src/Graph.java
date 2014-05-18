@@ -1,4 +1,6 @@
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -13,16 +15,16 @@ public class Graph implements IGraph {
 	private HashMap<Node, LinkedList<Edge>> adjEdges;
 	
 	private int V;
-	private HashMap<Integer, Node> nodes;
+	private HashMap<Node, Node> nodes;
 	
 	private int E;
-	private HashMap<Integer, Edge> edges;
+	private HashMap<Edge, Edge> edges;
 	
 	public Graph(){
 		this.adjNodes = new HashMap<Node, LinkedList<Node>>();
 		this.adjEdges = new HashMap<Node, LinkedList<Edge>>();
-		this.nodes = new HashMap<Integer, Node>();
-		this.edges = new HashMap<Integer, Edge>();
+		this.nodes = new HashMap<Node, Node>();
+		this.edges = new HashMap<Edge, Edge>();
 	}
 	
 	public Graph(IGraph g){
@@ -49,11 +51,11 @@ public class Graph implements IGraph {
 	
 	@Override
 	public boolean containsEdge(Edge arg0) {
-		return this.edges.containsKey(arg0.hashCode());
+		return this.edges.containsKey(arg0);
 	}
 	
 	public boolean containsNode(Node arg0){
-		return this.nodes.containsKey(arg0.hashCode());
+		return this.nodes.containsKey(arg0);
 	}
 
 	@Override
@@ -67,7 +69,7 @@ public class Graph implements IGraph {
 			System.out.println("node not found!");
 			return null;
 		}
-		return this.adjNodes.get(arg0.hashCode());
+		return this.adjNodes.get(arg0);
 	}
 
 	@Override
@@ -75,8 +77,21 @@ public class Graph implements IGraph {
 		return this.nodes.values();
 	}
 	
+	public Collection<Node> getSortedNodes(){
+		LinkedList<Node> nodes = new LinkedList<Node>(getNodes());
+		
+		Collections.sort(nodes, new Comparator<Node>() {
+	         @Override
+	         public int compare(Node o1, Node o2) {
+	             return o1.getLabel().toString().compareTo(o2.getLabel().toString());
+	         }
+	     });
+		
+		return nodes;
+	}
+	
 	public void addNode(Node n){
-		this.nodes.put(n.hashCode(), n);
+		this.nodes.put(n, n);
 		this.adjNodes.put(n, new LinkedList<Node>());
 		this.adjEdges.put(n, new LinkedList<Edge>());
 		this.V++;
@@ -96,7 +111,7 @@ public class Graph implements IGraph {
 		this.adjEdges.get(from).add(e);
 		this.adjEdges.get(to).add(e);
 		
-		this.edges.put(e.hashCode(), e);
+		this.edges.put(e, e);
 		this.E++;
 	}
 	
@@ -117,4 +132,8 @@ public class Graph implements IGraph {
         }
         return s.toString();
     }
+	
+	public static String edgeToString(Edge e){
+		return e.getFrom().getLabel().toString() + "->" + e.getTo().getLabel().toString();
+	}
 }

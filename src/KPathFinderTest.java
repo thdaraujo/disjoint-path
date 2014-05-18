@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 import graph.Edge;
+import graph.IGraph;
 import graph.Node;
 
 /**
@@ -25,11 +26,33 @@ public class KPathFinderTest {
 	public static void main(String[] args) {
 		printProjectName();
 		
-		Graph exampleDigraph = generateExampleDigraph();
-		for(Node n : exampleDigraph.getNodes()){
-			print(n, exampleDigraph.getAdjacentEdges(n));
+		runTestFromExample();
+		
+	}
+	
+	public static void runTestFromExample(){
+		Graph gOriginal = generateExampleDigraph();
+		for(Node n : gOriginal.getNodes()){
+			print(n, gOriginal.getAdjacentEdges(n));
 		}
-		System.out.println(exampleDigraph.toString());
+		System.out.println(gOriginal.toString());
+		
+		KPathFinderImplementation kPathFinder = new KPathFinderImplementation();
+		LinkedList<Node> sources = getSources((LinkedList<Node>) gOriginal.getSortedNodes());
+		LinkedList<Node> terminals = getTerminals((LinkedList<Node>) gOriginal.getSortedNodes());
+		
+		Graph gPlusST = kPathFinder.getGraphPlusSourceAndTerminal(gOriginal, sources, terminals);
+		System.out.println(gPlusST.toString());
+		
+		Graph gReduced = kPathFinder.getReducedGraph(gPlusST, gOriginal, kPathFinder.getTopologicalOrder(gPlusST));
+		System.out.println(gReduced.toString());
+		
+		IGraph gReducedObtained = kPathFinder.obtainReduction(gOriginal, sources, terminals);
+		System.out.println(gReducedObtained.toString());
+		
+		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gOriginal, sources, terminals, null);
+		System.out.println("thereExistsKPaths = " + thereExistsKPaths);
+		
 	}
 	
 	public static Graph generateSimpleDigraph(int count){
@@ -60,13 +83,7 @@ public class KPathFinderTest {
 			dg.addNode(new Node(i));
 		}
 		
-		LinkedList<Node> nodes = new LinkedList<Node>(dg.getNodes());
-		Collections.sort(nodes, new Comparator<Node>() {
-	         @Override
-	         public int compare(Node o1, Node o2) {
-	             return o1.getLabel().toString().compareTo(o2.getLabel().toString());
-	         }
-	     });
+		LinkedList<Node> nodes = new LinkedList<Node>(dg.getSortedNodes());
 		
 		//1->2
 		Node from = nodes.get(0);
@@ -99,6 +116,26 @@ public class KPathFinderTest {
 		dg.addEdge(e);
 		
 		return dg;
+	}
+	
+	public static LinkedList<Node> getSources(LinkedList<Node> nodes){
+		LinkedList<Node> sources = new LinkedList<Node>();
+		Node s1 = nodes.get(0), s2 = nodes.get(2);
+		
+		sources.add(s1);
+		sources.add(s2);
+		
+		return sources;
+	}
+	
+	public static LinkedList<Node> getTerminals(LinkedList<Node> nodes){
+		LinkedList<Node> terminals = new LinkedList<Node>();
+		Node t1 = nodes.get(3), t2 = nodes.get(4);
+		
+		terminals.add(t1);
+		terminals.add(t2);
+		
+		return terminals;
 	}
 	
 	public static void print(Node n, Collection<Edge> adjEdges){

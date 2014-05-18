@@ -17,49 +17,94 @@ import path.KPathFinder;
  * Implements KPathFinder interface.
  */
 public class KPathFinderImplementation implements KPathFinder {
-
-	private IGraph G;
-	private IGraph GPlusST;
-	private IGraph GReduced;
 	
 	public KPathFinderImplementation(){
-		this.G = new Graph();
-		this.GPlusST = new Graph();
-		this.GReduced = new Graph();
+
 	}
 	
 	/* (non-Javadoc)
 	 * @see path.KPathFinder#obtainReduction(graph.IGraph, java.util.List, java.util.List)
 	 */
 	@Override
-	public IGraph obtainReduction(IGraph arg0, List<Node> arg1, List<Node> arg2) {
+	public IGraph obtainReduction(IGraph G, List<Node> sources, List<Node> terminals) {
 		// TODO Auto-generated method stub
 		
-		this.G = arg0;
-		
-		return null;
+		Graph GOriginal = new Graph(G);
+		Graph GPlusST = this.getGraphPlusSourceAndTerminal(GOriginal, sources, terminals);
+		LinkedList<Node> topologicalOrder = this.getTopologicalOrder(GPlusST);
+		Graph GReduced = this.getReducedGraph(GPlusST, GOriginal, topologicalOrder);
+		return GReduced;
 	}
 
 	/* (non-Javadoc)
 	 * @see path.KPathFinder#thereExistsKDisjointPaths(graph.IGraph, java.util.List, java.util.List, java.util.Collection)
 	 */
 	@Override
-	public boolean thereExistsKDisjointPaths(IGraph arg0, List<Node> arg1,
-			List<Node> arg2, Collection<List<Node>> arg3) {
+	public boolean thereExistsKDisjointPaths(IGraph G, List<Node> sources,
+			List<Node> terminals, Collection<List<Node>> arg3) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 	
-	public Graph addSourceAndTerminal(Graph gOriginal){
+	public LinkedList<Node> getTopologicalOrder(Graph g){
+		//TODO topological order
+		return new LinkedList<Node>();
+	}
+	
+	public Graph getGraphPlusSourceAndTerminal(Graph gOriginal, List<Node> sources, List<Node> terminals){
 		Graph gPlusST = new Graph(gOriginal);
 		
+		Node S = new Node("S"); //source
+		Node T = new Node("T"); //terminal
 		
+		gPlusST.addNode(S);
+		gPlusST.addNode(T);
+		
+		//S points to every source of G
+		//S -> sources
+		for(Node source : sources){
+			Edge StoSource = new Edge(S, source);
+			gPlusST.addEdge(StoSource);
+		}
+		
+		//Every terminal in G points to T
+		//terminal -> T
+		for(Node terminal : terminals){
+			Edge terminalToT = new Edge(terminal, T);
+			gPlusST.addEdge(terminalToT);
+		}
 		
 		return gPlusST;
 	}
 	
-	public Graph getReducedGraph(Graph gPlusST){
-		Graph gReduced = new Graph(gPlusST);
+	public Graph getReducedGraph(Graph gPlusST, Graph gOriginal, LinkedList<Node> topologicalOrder){
+		Graph gReduced = new Graph();
+		
+		// permutation v x v
+		for(Node vi : gPlusST.getNodes()){
+			for(Node vj : gPlusST.getNodes()){
+				Node Vij = new Node(vi.getLabel() + "," + vj.getLabel());
+				gReduced.addNode(Vij);
+			}
+		}
+		
+		//TODO add edges
+		for(Node v : gReduced.getNodes()){
+			for(Node adj : gReduced.getAdjacentNodes(v)){
+				//verify conditions
+				Edge e = new Edge(v, adj);
+				
+				boolean first = edgeSatisfiesFirstCondition(e, gOriginal);
+				boolean second = edgeSatisfiesSecondCondition(e, gReduced);
+				boolean third = edgeSatisfiesThirdCondition(e, gReduced, topologicalOrder);
+				
+				if(first && second && third){
+					//add edge to g-reduced
+					System.out.println(Graph.edgeToString(e) + " added to g-reduced");
+					gReduced.addEdge(e);
+				}
+			}
+		}
 		
 		return gReduced;
 	}
