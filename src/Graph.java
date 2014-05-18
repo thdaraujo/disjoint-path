@@ -133,6 +133,16 @@ public class Graph implements IGraph {
         return s.toString();
     }
 	
+	public static void printNode(Node n, Collection<Edge> adjEdges){
+		System.out.println("Node: " + n.getLabel());
+		System.out.println("Edges: " + adjEdges.size());
+		
+		for(Edge e : adjEdges){
+			System.out.println(edgeToString(e));
+		}
+		System.out.println("");
+	}
+	
 	public static String edgeToString(Edge e){
 		return e.getFrom().getLabel().toString() + "->" + e.getTo().getLabel().toString();
 	}

@@ -46,9 +46,23 @@ public class KPathFinderImplementation implements KPathFinder {
 		return false;
 	}
 	
+	/*
+	 * Returns a topological order for the graph.
+	 * If no topological order exists, returns null (for example: graph has a cycle, and is not a DAG).
+	 */
 	public LinkedList<Node> getTopologicalOrder(Graph g){
-		//TODO topological order
-		return new LinkedList<Node>();
+		Topological topologicalOrder = new Topological(g);
+		
+		System.out.println(topologicalOrder.toString());
+		
+		if(topologicalOrder.hasOrder()){
+			LinkedList<Node> order = topologicalOrder.order();	
+			return order;
+		}
+		else{
+			System.out.println("Graph is not a DAG!");
+			return null;
+		}
 	}
 	
 	public Graph getGraphPlusSourceAndTerminal(Graph gOriginal, List<Node> sources, List<Node> terminals){
