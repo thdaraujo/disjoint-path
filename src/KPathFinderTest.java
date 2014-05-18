@@ -1,4 +1,10 @@
+import java.text.Collator;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
+
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 import graph.Edge;
 import graph.Node;
@@ -12,43 +18,28 @@ import graph.Node;
  *
  */
 public class KPathFinderTest {
-
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		printProjectName();
 		
-		Graph G = new Graph();
-		
-		LinkedList<Node> nodes = getNodes(10);
-		for(Node n : nodes){
-			System.out.println(n.getLabel() + ": " +  n.hashCode());
-			G.addNode(n);
+		Graph exampleDigraph = generateExampleDigraph();
+		for(Node n : exampleDigraph.getNodes()){
+			print(n, exampleDigraph.getAdjacentEdges(n));
 		}
-		
-		LinkedList<Edge> edges = getEdges(new LinkedList<Node>(G.getNodes()));
-		for (Edge e : edges) {
-			System.out.println(e.toString() + ": " +  e.hashCode());
-			G.addEdge(e);
-		}
-		
-		System.out.println(G.toString());
-		
+		System.out.println(exampleDigraph.toString());
 	}
 	
-	public static LinkedList<Node> getNodes(int count){
-		LinkedList<Node> nodes = new LinkedList<Node>();
+	public static Graph generateSimpleDigraph(int count){
+		Graph simpleDigraph = new Graph();
 		
 		for(int i = 1; i <= count; i++){
-			nodes.add(new Node(i));
+			simpleDigraph.addNode(new Node(i));
 		}
 		
-		return nodes;
-	}
-	
-	public static LinkedList<Edge> getEdges(LinkedList<Node> nodes){
-		LinkedList<Edge> edges = new LinkedList<Edge>();
+		LinkedList<Node> nodes = new LinkedList<Node>(simpleDigraph.getNodes());
 		
 		while(!nodes.isEmpty()){
 			Node from = nodes.pop();
@@ -56,11 +47,68 @@ public class KPathFinderTest {
 			
 			if(from != null && to != null){
 				Edge e = new Edge(from, to);
-				edges.add(e);
+				simpleDigraph.addEdge(e);
 			}
 		}
+		return simpleDigraph;
+	}
+	
+	public static Graph generateExampleDigraph(){
+		Graph dg = new Graph();
 		
-		return edges;
+		for(int i = 1; i <= 5; i++){
+			dg.addNode(new Node(i));
+		}
+		
+		LinkedList<Node> nodes = new LinkedList<Node>(dg.getNodes());
+		Collections.sort(nodes, new Comparator<Node>() {
+	         @Override
+	         public int compare(Node o1, Node o2) {
+	             return o1.getLabel().toString().compareTo(o2.getLabel().toString());
+	         }
+	     });
+		
+		//1->2
+		Node from = nodes.get(0);
+		Node to = nodes.get(1);
+		Edge e = new Edge(from, to);
+		dg.addEdge(e);
+		
+		//1->5
+		from = nodes.get(0);
+		to = nodes.get(4);
+		e = new Edge(from, to);
+		dg.addEdge(e);
+		
+		//2->3
+		from = nodes.get(1);
+		to = nodes.get(2);
+		e = new Edge(from, to);
+		dg.addEdge(e);
+
+		//2->4
+		from = nodes.get(1);
+		to = nodes.get(3);
+		e = new Edge(from, to);
+		dg.addEdge(e);
+		
+		//5->4
+		from = nodes.get(4);
+		to = nodes.get(3);
+		e = new Edge(from, to);
+		dg.addEdge(e);
+		
+		return dg;
+	}
+	
+	public static void print(Node n, Collection<Edge> adjEdges){
+		System.out.println("Node: " + n.getLabel());
+		System.out.println("Edges: " + adjEdges.size());
+		
+		for(Edge e : adjEdges){
+			System.out.println(e.getFrom().getLabel() + "->" + e.getTo().getLabel());
+		}
+		System.out.println("");
 	}
 	
 	private static void printProjectName() {

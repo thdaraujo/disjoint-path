@@ -10,6 +10,7 @@ import graph.Node;
 public class Graph implements IGraph {
 
 	private HashMap<Node, LinkedList<Node>> adjNodes;
+	private HashMap<Node, LinkedList<Edge>> adjEdges;
 	
 	private int V;
 	private HashMap<Integer, Node> nodes;
@@ -19,8 +20,23 @@ public class Graph implements IGraph {
 	
 	public Graph(){
 		this.adjNodes = new HashMap<Node, LinkedList<Node>>();
+		this.adjEdges = new HashMap<Node, LinkedList<Edge>>();
 		this.nodes = new HashMap<Integer, Node>();
 		this.edges = new HashMap<Integer, Edge>();
+	}
+	
+	public Graph(IGraph g){
+		this();
+		for(Node n : g.getNodes()){
+			this.addNode(n);
+		}
+		
+		for(Node n : g.getNodes()){
+			Collection<Edge> adjEdges = g.getAdjacentEdges(n);
+			for(Edge e : adjEdges){
+				this.addEdge(e);
+			}
+		}
 	}
 	
 	public int V(){
@@ -42,8 +58,7 @@ public class Graph implements IGraph {
 
 	@Override
 	public Collection<Edge> getAdjacentEdges(Node arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		return this.adjEdges.get(arg0);
 	}
 
 	@Override
@@ -63,6 +78,7 @@ public class Graph implements IGraph {
 	public void addNode(Node n){
 		this.nodes.put(n.hashCode(), n);
 		this.adjNodes.put(n, new LinkedList<Node>());
+		this.adjEdges.put(n, new LinkedList<Edge>());
 		this.V++;
 	}
 	
@@ -76,6 +92,10 @@ public class Graph implements IGraph {
 		}
 		
 		this.adjNodes.get(from).add(to);
+		
+		this.adjEdges.get(from).add(e);
+		this.adjEdges.get(to).add(e);
+		
 		this.edges.put(e.hashCode(), e);
 		this.E++;
 	}
