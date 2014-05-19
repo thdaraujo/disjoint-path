@@ -41,7 +41,7 @@ public class KPathFinderImplementation implements KPathFinder {
 	 */
 	@Override
 	public boolean thereExistsKDisjointPaths(IGraph G, List<Node> sources,
-			List<Node> terminals, Collection<List<Node>> arg3) {
+			List<Node> terminals, Collection<List<Node>> kPaths) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -68,12 +68,11 @@ public class KPathFinderImplementation implements KPathFinder {
 	public Graph getGraphPlusSourceAndTerminal(Graph gOriginal, List<Node> sources, List<Node> terminals){
 		Graph gPlusST = new Graph(gOriginal);
 		
-		Node S = new Node("S"); //source
-		Node T = new Node("T"); //terminal
+		Node S = new Node("s"); //source
+		Node T = new Node("t"); //terminal
 		
 		gPlusST.addNode(S);
 		gPlusST.addNode(T);
-		
 		
 		if(sources.size() != terminals.size()){
 			System.out.println("sources and terminals should have the same size!");
@@ -103,7 +102,12 @@ public class KPathFinderImplementation implements KPathFinder {
 		// permutation v x v
 		for(Node vi : gPlusST.getNodes()){
 			for(Node vj : gPlusST.getNodes()){
-				Node Vij = new Node(vi.getLabel() + "," + vj.getLabel());
+				//label is a list of nodes {vi, vj}
+				List<Node> label = new LinkedList<Node>();
+				label.add(vi);
+				label.add(vj);
+				
+				Node Vij = new Node(label); //(vi.getLabel() + "," + vj.getLabel());
 				gReduced.addNode(Vij);
 			}
 		}

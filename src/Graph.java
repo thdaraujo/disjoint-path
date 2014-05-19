@@ -3,6 +3,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import graph.Edge;
@@ -125,7 +126,18 @@ public class Graph implements IGraph {
             Node key = entry.getKey();
             LinkedList<Node> adjacentList = entry.getValue();
             
-            s.append(key.getLabel().toString() + ": ");
+            String label = "";
+            if(key.getLabel() instanceof List<?> && key.getLabel() != null){
+            	List<Node> nodeList = (List<Node>) key.getLabel();
+            	for(Node n : nodeList){
+            		label += n.getLabel() + " ";
+            	}
+            }
+            else{
+            	label = key.getLabel().toString();
+            }
+            
+            s.append(label + ": ");
             for (Node w : adjacentList) {
                 s.append(w.getLabel().toString() + " ");
             }
