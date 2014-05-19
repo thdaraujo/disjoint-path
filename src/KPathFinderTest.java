@@ -58,20 +58,20 @@ public class KPathFinderTest {
 	
 	public static LinkedList<Node> getSources(LinkedList<Node> nodes){
 		LinkedList<Node> sources = new LinkedList<Node>();
-		Node s1 = nodes.get(0), s2 = nodes.get(2);
+		Node v1 = nodes.get(0), v2 = nodes.get(1);
 		
-		sources.add(s1);
-		sources.add(s2);
+		sources.add(v1);
+		sources.add(v2);
 		
 		return sources;
 	}
 	
 	public static LinkedList<Node> getTerminals(LinkedList<Node> nodes){
 		LinkedList<Node> terminals = new LinkedList<Node>();
-		Node t1 = nodes.get(3), t2 = nodes.get(4);
+		Node v5 = nodes.get(4), v4 = nodes.get(3);
 		
-		terminals.add(t1);
-		terminals.add(t2);
+		terminals.add(v5);
+		terminals.add(v4);
 		
 		return terminals;
 	}

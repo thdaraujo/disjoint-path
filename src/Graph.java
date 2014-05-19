@@ -34,8 +34,9 @@ public class Graph implements IGraph {
 		}
 		
 		for(Node n : g.getNodes()){
-			Collection<Edge> adjEdges = g.getAdjacentEdges(n);
-			for(Edge e : adjEdges){
+			Collection<Node> adjNodes = g.getAdjacentNodes(n);
+			for(Node v : adjNodes){
+				Edge e = new Edge(n, v);
 				this.addEdge(e);
 			}
 		}

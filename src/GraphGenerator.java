@@ -41,6 +41,12 @@ public class GraphGenerator {
 		Edge e = new Edge(from, to);
 		dg.addEdge(e);
 		
+		//1->3
+		from = nodes.get(0);
+		to = nodes.get(2);
+		e = new Edge(from, to);
+		dg.addEdge(e);
+		
 		//1->5
 		from = nodes.get(0);
 		to = nodes.get(4);
@@ -53,14 +59,14 @@ public class GraphGenerator {
 		e = new Edge(from, to);
 		dg.addEdge(e);
 
-		//2->4
+		//2->5
 		from = nodes.get(1);
-		to = nodes.get(3);
+		to = nodes.get(4);
 		e = new Edge(from, to);
 		dg.addEdge(e);
 		
-		//5->4
-		from = nodes.get(4);
+		//3->4
+		from = nodes.get(2);
 		to = nodes.get(3);
 		e = new Edge(from, to);
 		dg.addEdge(e);

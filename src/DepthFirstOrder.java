@@ -31,6 +31,8 @@ public class DepthFirstOrder {
 		marked = new HashSet<Node>(nodeCount);
 		onStack = new HashSet<Node>(nodeCount);
 		
+		Graph teste = (Graph) G;
+		
 		for (Node v : G.getNodes())
 			if (!marked.contains(v))
 				dfs(G, v);

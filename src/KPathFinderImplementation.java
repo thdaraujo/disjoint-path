@@ -74,6 +74,12 @@ public class KPathFinderImplementation implements KPathFinder {
 		gPlusST.addNode(S);
 		gPlusST.addNode(T);
 		
+		
+		if(sources.size() != terminals.size()){
+			System.out.println("sources and terminals should have the same size!");
+			//return gPlusST;
+		}
+		
 		//S points to every source of G
 		//S -> sources
 		for(Node source : sources){
