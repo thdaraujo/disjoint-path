@@ -32,7 +32,12 @@ public class KPathFinderImplementation implements KPathFinder {
 		Graph GOriginal = new Graph(G);
 		Graph GPlusST = this.getGraphPlusSourceAndTerminal(GOriginal, sources, terminals);
 		LinkedList<Node> topologicalOrder = this.getTopologicalOrder(GPlusST);
-		Graph GReduced = this.getReducedGraph(GPlusST, GOriginal, topologicalOrder);
+		Graph GReduced = this.getReducedGraph(GOriginal, 
+				GPlusST, 
+				topologicalOrder, 
+				new LinkedList<Node>(sources), 
+				new LinkedList<Node>(terminals));
+		
 		return GReduced;
 	}
 
@@ -96,7 +101,12 @@ public class KPathFinderImplementation implements KPathFinder {
 		return gPlusST;
 	}
 	
-	public Graph getReducedGraph(Graph gPlusST, Graph gOriginal, LinkedList<Node> topologicalOrder){
+	public Graph getReducedGraph(Graph gOriginal,
+			Graph gPlusST, 
+			LinkedList<Node> topologicalOrder, 
+			LinkedList<Node> sources, 
+			LinkedList<Node> terminals){
+		
 		Graph gReduced = new Graph();
 		
 		// permutation v x v
@@ -119,8 +129,8 @@ public class KPathFinderImplementation implements KPathFinder {
 				Edge e = new Edge(v, adj);
 				
 				boolean first = edgeSatisfiesFirstCondition(e, gOriginal);
-				boolean second = edgeSatisfiesSecondCondition(e, gReduced);
-				boolean third = edgeSatisfiesThirdCondition(e, gReduced, topologicalOrder);
+				boolean second = edgeSatisfiesSecondCondition(e, gReduced, sources);
+				boolean third = edgeSatisfiesThirdCondition(e, gOriginal, gReduced, topologicalOrder, terminals);
 				
 				if(first && second && third){
 					//add edge to g-reduced
@@ -136,23 +146,32 @@ public class KPathFinderImplementation implements KPathFinder {
 	/*
 	 * First condition: edge exists on original graph.
 	 */
-	public boolean edgeSatisfiesFirstCondition(Edge e, Graph gOriginal){
+	private boolean edgeSatisfiesFirstCondition(Edge e, Graph gOriginal){
 		return gOriginal.containsEdge(e);
 	}
 	
 	/*
 	 * Second condition: edge is S or ?
 	 */
-	public boolean edgeSatisfiesSecondCondition(Edge e, Graph gReduced){
+	private boolean edgeSatisfiesSecondCondition(Edge e, Graph gReduced, LinkedList<Node> sources){
 		// TODO
+		if(sources.contains(e.getTo())){
+			return true;
+		}
 		return false;
 	}
 	
 	/*
 	 * Third condition: edge is T or its position in the topological order is maximum.
 	 */
-	public boolean edgeSatisfiesThirdCondition(Edge e, Graph gReduced, LinkedList<Node> topologicalOrder){
-		//TODO
+	private boolean edgeSatisfiesThirdCondition(Edge e, 
+			Graph gReduced, 
+			Graph gOriginal, 
+			LinkedList<Node> topologicalOrder, 
+			LinkedList<Node> terminals){
+		if(terminals.contains(e.getTo()) || topologicalOrder.peekLast() == e.getTo()){
+			return true;
+		}
 		return false;
 	}
 

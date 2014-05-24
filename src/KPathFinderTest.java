@@ -44,7 +44,7 @@ public class KPathFinderTest {
 		Graph gPlusST = kPathFinder.getGraphPlusSourceAndTerminal(gOriginal, sources, terminals);
 		System.out.println(gPlusST.toString());
 		
-		Graph gReduced = kPathFinder.getReducedGraph(gPlusST, gOriginal, kPathFinder.getTopologicalOrder(gPlusST));
+		Graph gReduced = kPathFinder.getReducedGraph(gPlusST, gOriginal, kPathFinder.getTopologicalOrder(gPlusST), sources, terminals);
 		System.out.println(gReduced.toString());
 		
 		IGraph gReducedObtained = kPathFinder.obtainReduction(gOriginal, sources, terminals);
