@@ -1,8 +1,10 @@
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 
 import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
@@ -41,17 +43,19 @@ public class KPathFinderTest {
 		LinkedList<Node> sources = getSources((LinkedList<Node>) gOriginal.getSortedNodes());
 		LinkedList<Node> terminals = getTerminals((LinkedList<Node>) gOriginal.getSortedNodes());
 		
-		Graph gPlusST = kPathFinder.getGraphPlusSourceAndTerminal(gOriginal, sources, terminals);
-		System.out.println(gPlusST.toString());
-		
-		Graph gReduced = kPathFinder.getReducedGraph(gPlusST, gOriginal, kPathFinder.getTopologicalOrder(gPlusST), sources, terminals);
-		System.out.println(gReduced.toString());
-		
 		IGraph gReducedObtained = kPathFinder.obtainReduction(gOriginal, sources, terminals);
 		System.out.println(gReducedObtained.toString());
 		
-		//TODO arg3 ???
-		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gOriginal, sources, terminals, null);
+		List<Node> topologicalOrder = kPathFinder.getTopoligcalOrderToUseInReduction(gOriginal);
+		
+		System.out.print("Ordem topologica: ");
+		for(Node n : topologicalOrder){
+			System.out.print(n.getLabel() + " ");
+		}
+		System.out.println("");
+		
+		Collection<List<Node>> paths = new ArrayList();
+		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gOriginal, sources, terminals, paths);
 		System.out.println("thereExistsKPaths = " + thereExistsKPaths);
 		
 	}

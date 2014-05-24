@@ -147,16 +147,44 @@ public class Graph implements IGraph {
     }
 	
 	public static void printNode(Node n, Collection<Edge> adjEdges){
-		System.out.println("Node: " + n.getLabel());
-		System.out.println("Edges: " + adjEdges.size());
+		System.out.println("Node: " + labelToString(n.getLabel()));
+		if(adjEdges != null){
+			System.out.println("Edges: " + adjEdges.size());
+		}
 		
+		String sLabel = labelToString(n.getLabel());
+		
+		System.out.println("Edges: ");
 		for(Edge e : adjEdges){
 			System.out.println(edgeToString(e));
 		}
+		
 		System.out.println("");
 	}
 	
+	public static String labelToString(Object label)
+	{
+		StringBuilder s = new StringBuilder();
+		if(label != null && label instanceof List<?>){
+			s.append("{");
+			List<Node> nodeList = (List<Node>) label;
+        	for(Node node : nodeList){
+        		s.append(node.getLabel() + " ");
+        	}
+        	s.append("}");
+		}
+		else{
+			s.append("{"+ label + "}");
+		}
+		return s.toString();
+	}
+	
 	public static String edgeToString(Edge e){
-		return e.getFrom().getLabel().toString() + "->" + e.getTo().getLabel().toString();
+		Node from = e.getFrom();
+		Node to = e.getTo();
+		if(from != null && to != null){
+			return labelToString(from.getLabel()) + "->" + labelToString(to.getLabel());
+		}
+		return " null ";
 	}
 }

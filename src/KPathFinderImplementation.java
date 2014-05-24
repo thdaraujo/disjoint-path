@@ -3,6 +3,7 @@ import graph.IGraph;
 import graph.Node;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,8 +19,14 @@ import path.KPathFinder;
  */
 public class KPathFinderImplementation implements KPathFinder {
 	
+	private LinkedList<Node> topologicalOrder;
+	private Node S;
+	private Node T;
+	
 	public KPathFinderImplementation(){
-
+		this.topologicalOrder = new LinkedList<Node>();
+		this.S = new Node("s"); //source
+		this.T = new Node("t"); //terminal
 	}
 	
 	/* (non-Javadoc)
@@ -27,11 +34,11 @@ public class KPathFinderImplementation implements KPathFinder {
 	 */
 	@Override
 	public IGraph obtainReduction(IGraph G, List<Node> sources, List<Node> terminals) {
-		// TODO Auto-generated method stub
-		
 		Graph GOriginal = new Graph(G);
-		Graph GPlusST = this.getGraphPlusSourceAndTerminal(GOriginal, sources, terminals);
-		LinkedList<Node> topologicalOrder = this.getTopologicalOrder(GPlusST);
+		Graph GPlusST = this.getGraphPlusSourceAndTerminal(GOriginal, this.S, this.T, sources, terminals);
+		
+		List<Node> topologicalOrder = this.getTopoligcalOrderToUseInReduction(G);
+		
 		Graph GReduced = this.getReducedGraph(GOriginal, 
 				GPlusST, 
 				topologicalOrder, 
@@ -49,6 +56,19 @@ public class KPathFinderImplementation implements KPathFinder {
 			List<Node> terminals, Collection<List<Node>> kPaths) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	@Override
+	public List<Node> getTopoligcalOrderToUseInReduction(IGraph g) {
+		if(this.topologicalOrder == null || this.topologicalOrder.isEmpty())
+		{
+			System.out.println("Getting new topological order for G");
+			Graph gOriginal = new Graph(g);
+			this.topologicalOrder = getTopologicalOrder(gOriginal);
+			this.topologicalOrder.addFirst(this.S);
+			this.topologicalOrder.addLast(T);	
+		}
+		return this.topologicalOrder;
 	}
 	
 	/*
@@ -70,11 +90,8 @@ public class KPathFinderImplementation implements KPathFinder {
 		}
 	}
 	
-	public Graph getGraphPlusSourceAndTerminal(Graph gOriginal, List<Node> sources, List<Node> terminals){
+	public Graph getGraphPlusSourceAndTerminal(Graph gOriginal, Node S, Node T, List<Node> sources, List<Node> terminals){
 		Graph gPlusST = new Graph(gOriginal);
-		
-		Node S = new Node("s"); //source
-		Node T = new Node("t"); //terminal
 		
 		gPlusST.addNode(S);
 		gPlusST.addNode(T);
@@ -103,9 +120,21 @@ public class KPathFinderImplementation implements KPathFinder {
 	
 	public Graph getReducedGraph(Graph gOriginal,
 			Graph gPlusST, 
-			LinkedList<Node> topologicalOrder, 
+			List<Node> topologicalOrder, 
 			LinkedList<Node> sources, 
 			LinkedList<Node> terminals){
+		
+		HashMap<Node, Node> sourcesMap = new HashMap<Node, Node>();
+		HashMap<Node, Node> terminalsMap = new HashMap<Node, Node>();
+		
+		for(Node n : sources){
+			sourcesMap.put(n, n);
+		}
+		
+		for(Node n : terminals){
+			terminalsMap.put(n, n);
+		}
+		
 		
 		Graph gReduced = new Graph();
 		
@@ -117,20 +146,22 @@ public class KPathFinderImplementation implements KPathFinder {
 				label.add(vi);
 				label.add(vj);
 				
-				Node Vij = new Node(label); //(vi.getLabel() + "," + vj.getLabel());
+				Node Vij = new Node(label);
 				gReduced.addNode(Vij);
 			}
 		}
 		
 		//TODO add edges
-		for(Node v : gReduced.getNodes()){
-			for(Node adj : gReduced.getAdjacentNodes(v)){
-				//verify conditions
-				Edge e = new Edge(v, adj);
+		for(Node vi : gReduced.getNodes()){
+			for(Node vj : gReduced.getNodes()){
+				//get node that starts a path
+				Edge e = getReducedEdge((List<Node>)vi.getLabel(), (List<Node>)vj.getLabel());
+				if(e == null) continue;
 				
-				boolean first = edgeSatisfiesFirstCondition(e, gOriginal);
-				boolean second = edgeSatisfiesSecondCondition(e, gReduced, sources);
-				boolean third = edgeSatisfiesThirdCondition(e, gOriginal, gReduced, topologicalOrder, terminals);
+				//verify conditions
+				boolean first = edgeSatisfiesFirstCondition(e, gPlusST);
+				boolean second = edgeSatisfiesSecondCondition(e, gReduced, sourcesMap);
+				boolean third = edgeSatisfiesThirdCondition(e, gOriginal, gReduced, topologicalOrder, terminalsMap);
 				
 				if(first && second && third){
 					//add edge to g-reduced
@@ -143,19 +174,32 @@ public class KPathFinderImplementation implements KPathFinder {
 		return gReduced;
 	}
 	
+	private Edge getReducedEdge(List<Node> nodesVi, List<Node> nodesVj) {
+		if(nodesVi.size() != nodesVj.size()) return null;
+		
+		int size = nodesVi.size();
+		
+		for(int i = 0; i < size; i++){
+			Node from = nodesVi.get(i);
+			Node to = nodesVj.get(i);
+			if(from != to) return new Edge(from, to);
+		}
+		return null;
+	}
+	
 	/*
 	 * First condition: edge exists on original graph.
 	 */
-	private boolean edgeSatisfiesFirstCondition(Edge e, Graph gOriginal){
-		return gOriginal.containsEdge(e);
+	private boolean edgeSatisfiesFirstCondition(Edge e, Graph gPlusST){
+		return gPlusST.containsEdge(e);
 	}
 	
 	/*
 	 * Second condition: edge is S or ?
 	 */
-	private boolean edgeSatisfiesSecondCondition(Edge e, Graph gReduced, LinkedList<Node> sources){
-		// TODO
-		if(sources.contains(e.getTo())){
+	private boolean edgeSatisfiesSecondCondition(Edge e, Graph gReduced, HashMap<Node, Node> sources){
+		Node to = e.getTo();
+		if(sources.containsKey(to)){
 			return true;
 		}
 		return false;
@@ -167,12 +211,20 @@ public class KPathFinderImplementation implements KPathFinder {
 	private boolean edgeSatisfiesThirdCondition(Edge e, 
 			Graph gReduced, 
 			Graph gOriginal, 
-			LinkedList<Node> topologicalOrder, 
-			LinkedList<Node> terminals){
-		if(terminals.contains(e.getTo()) || topologicalOrder.peekLast() == e.getTo()){
+			List<Node> topologicalOrder, 
+			HashMap<Node, Node> terminals){
+		
+		//TODO 
+		
+		Node lastNode = topologicalOrder.get(topologicalOrder.size() - 1);
+		Node to = e.getTo();
+		
+		if(terminals.containsKey(to)){
+			return true;
+		}
+		else if(lastNode != null && to != null && lastNode == to){
 			return true;
 		}
 		return false;
 	}
-
 }
