@@ -121,8 +121,8 @@ public class KPathFinderImplementation implements KPathFinder {
 	public Graph getReducedGraph(Graph gOriginal,
 			Graph gPlusST, 
 			List<Node> topologicalOrder, 
-			LinkedList<Node> sources, 
-			LinkedList<Node> terminals){
+			List<Node> sources, 
+			List<Node> terminals){
 		
 		HashMap<Node, Node> sourcesMap = new HashMap<Node, Node>();
 		HashMap<Node, Node> terminalsMap = new HashMap<Node, Node>();
@@ -135,20 +135,14 @@ public class KPathFinderImplementation implements KPathFinder {
 			terminalsMap.put(n, n);
 		}
 		
-		
 		Graph gReduced = new Graph();
 		
 		// permutation v x v
-		for(Node vi : gPlusST.getNodes()){
-			for(Node vj : gPlusST.getNodes()){
-				//label is a list of nodes {vi, vj}
-				List<Node> label = new LinkedList<Node>();
-				label.add(vi);
-				label.add(vj);
-				
-				Node Vij = new Node(label);
-				gReduced.addNode(Vij);
-			}
+		int k = sources.size();
+		List<Node> crossProduct = new LinkedList<Node>();
+		crossProduct = crossProduct(k, topologicalOrder, topologicalOrder);
+		for(Node n : crossProduct){
+			gReduced.addNode(n);
 		}
 		
 		//TODO add edges
@@ -165,8 +159,12 @@ public class KPathFinderImplementation implements KPathFinder {
 				
 				if(first && second && third){
 					//add edge to g-reduced
-					System.out.println(Graph.edgeToString(e) + " added to g-reduced");
-					gReduced.addEdge(e);
+					Edge eReduced = new Edge(vi, vj);
+					gReduced.addEdge(eReduced);
+					System.out.println(Graph.edgeToString(eReduced) + " added to g-reduced");
+				}
+				else{
+					//System.out.println(Graph.edgeToString(e) + " conditions are: " + first + "\t" + second + "\t" + third);
 				}
 			}
 		}
@@ -174,14 +172,47 @@ public class KPathFinderImplementation implements KPathFinder {
 		return gReduced;
 	}
 	
-	private Edge getReducedEdge(List<Node> nodesVi, List<Node> nodesVj) {
-		if(nodesVi.size() != nodesVj.size()) return null;
+	public List<Node> crossProduct(int k, List<Node> a, List<Node> b){
+		if(k-1 == 0) return a;
+		else
+		{
+			LinkedList<Node> crossProduct = new LinkedList<Node>();
+			for(Node vi : a){
+				for(Node vj : b){
+					Node product = nodeProduct(vi, vj);
+					crossProduct.add(product);
+				}
+			}
+			return crossProduct(k-1, crossProduct, b);
+		}
+	}
+	
+	public Node nodeProduct(Node a, Node b){
+		if(a.getLabel() instanceof List<?>){
+			List<Node> label = new LinkedList<Node>();
+			List<Node> nodeList = (List<Node>)a.getLabel();
+			label.addAll(nodeList);
+			label.add(b);
+			return new Node(label);
+		}
+		else{
+			List<Node> label = new LinkedList<Node>();
+			label.add(a);
+			label.add(b);
+			return new Node(label);
+		}
+	}
+	
+	
+	
+	private Edge getReducedEdge(List<Node> nodesFrom, List<Node> nodesTo) {
+		if(nodesFrom.size() != nodesTo.size()) return null;
 		
-		int size = nodesVi.size();
+		int size = nodesFrom.size();
 		
 		for(int i = 0; i < size; i++){
-			Node from = nodesVi.get(i);
-			Node to = nodesVj.get(i);
+			Node from = nodesFrom.get(i);
+			Node to = nodesTo.get(i);
 			if(from != to) return new Edge(from, to);
 		}
 		return null;
@@ -215,14 +246,13 @@ public class KPathFinderImplementation implements KPathFinder {
 			HashMap<Node, Node> terminals){
 		
 		//TODO 
-		
-		Node lastNode = topologicalOrder.get(topologicalOrder.size() - 1);
+		Node from = e.getFrom();
 		Node to = e.getTo();
 		
 		if(terminals.containsKey(to)){
 			return true;
 		}
-		else if(lastNode != null && to != null && lastNode == to){
+		else if(to != null && topologicalOrder.indexOf(to) > topologicalOrder.indexOf(from)){
 			return true;
 		}
 		return false;
