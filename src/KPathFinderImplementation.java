@@ -157,19 +157,15 @@ public class KPathFinderImplementation implements KPathFinder {
 		for(Node vi : gReduced.getNodes()){
 			for(Node vj : gReduced.getNodes()){
 				//get node that starts a path
-				Edge e = getReducedEdge((List<Node>)vi.getLabel(), (List<Node>)vj.getLabel());
-				if(e == null) continue;
+				Edge e = new Edge(vi, vj);
 				
 				//verify conditions
-				boolean first = edgeSatisfiesFirstCondition(e, gPlusST);
-				boolean second = edgeSatisfiesSecondCondition(e, gReduced, sourcesMap);
-				boolean third = edgeSatisfiesThirdCondition(e, gOriginal, gReduced, topologicalOrder, terminalsMap);
+				boolean validEdge = verifyConditions(e, gPlusST, sourcesMap, terminalsMap); // edgeSatisfiesFirstCondition(e, gPlusST);
 				
-				if(first && second && third){
+				if(validEdge){//&& second && third){
 					//add edge to g-reduced
-					Edge eReduced = new Edge(vi, vj);
-					gReduced.addEdge(eReduced);
-					System.out.println(Graph.edgeToString(eReduced) + " added to g-reduced");
+					gReduced.addEdge(e);
+					System.out.println(Graph.edgeToString(e) + " added to g-reduced");
 				}
 				else{
 					//System.out.println(Graph.edgeToString(e) + " conditions are: " + first + "\t" + second + "\t" + third);
@@ -181,7 +177,7 @@ public class KPathFinderImplementation implements KPathFinder {
 	}
 	
 	public List<Node> crossProduct(int k, List<Node> a, List<Node> b){
-		if(k == 0) return a;
+		if(k-1 == 0) return a;
 		else
 		{
 			LinkedList<Node> crossProduct = new LinkedList<Node>();
@@ -189,7 +185,6 @@ public class KPathFinderImplementation implements KPathFinder {
 				for(Node vj : b){
 					Node product = nodeProduct(vi, vj);
 					crossProduct.add(product);
-					
 				}
 			}
 			return crossProduct(k-1, crossProduct, b);
@@ -228,10 +223,31 @@ public class KPathFinderImplementation implements KPathFinder {
 	}
 	
 	/*
-	 * First condition: edge exists on original graph.
+	 * First condition: one of the edges exists on the original graph.
 	 */
-	private boolean edgeSatisfiesFirstCondition(Edge e, Graph gPlusST){
-		return gPlusST.containsEdge(e);
+	private boolean verifyConditions(Edge e, Graph gPlusST, HashMap<Node, Node> sources, HashMap<Node, Node> terminals){
+		List<Node> vNodes = (List<Node>) e.getFrom().getLabel(),
+				wNodes = (List<Node>) e.getTo().getLabel();
+		
+		if(vNodes.size() != wNodes.size()) return false;
+		for(int i = 0; i < vNodes.size(); i++){
+			Node v_i = vNodes.get(i),
+					w_i = wNodes.get(i);
+			
+			Edge e_i = new Edge(v_i, w_i);
+			
+			//first condition
+			if(gPlusST.containsEdge(e_i)){
+				//second condition
+				if(v_i == S && !sources.containsKey(w_i)) return false;
+				if(w_i == T && !terminals.containsKey(v_i)) return false;
+				//third condition (negation)
+				if(!(w_i == T || f(w_i, topologicalOrder) > f(v_i, topologicalOrder))) return false;
+				
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/*
@@ -261,9 +277,16 @@ public class KPathFinderImplementation implements KPathFinder {
 		if(terminals.containsKey(to)){
 			return true;
 		}
-		else if(to != null && topologicalOrder.indexOf(to) > topologicalOrder.indexOf(from)){
+		else if(to != null && f(to, topologicalOrder) > f(from, topologicalOrder)){
 			return true;
 		}
 		return false;
+	}
+	
+	/*
+	 * Get position of node in the topological order
+	 */
+	private int f(Node n, List<Node> topologicalOrder){
+		return topologicalOrder.indexOf(n);
 	}
 }
