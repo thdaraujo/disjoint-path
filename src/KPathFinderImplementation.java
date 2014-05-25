@@ -22,6 +22,8 @@ public class KPathFinderImplementation implements KPathFinder {
 	private LinkedList<Node> topologicalOrder;
 	private Node S;
 	private Node T;
+	private Node reducedStart;
+	private Node reducedTerminal;
 	
 	public KPathFinderImplementation(){
 		this.topologicalOrder = new LinkedList<Node>();
@@ -66,7 +68,7 @@ public class KPathFinderImplementation implements KPathFinder {
 			Graph gOriginal = new Graph(g);
 			this.topologicalOrder = getTopologicalOrder(gOriginal);
 			this.topologicalOrder.addFirst(this.S);
-			this.topologicalOrder.addLast(T);	
+			this.topologicalOrder.addLast(this.T);	
 		}
 		return this.topologicalOrder;
 	}
@@ -141,6 +143,12 @@ public class KPathFinderImplementation implements KPathFinder {
 		int k = sources.size();
 		List<Node> crossProduct = new LinkedList<Node>();
 		crossProduct = crossProduct(k, topologicalOrder, topologicalOrder);
+		
+		if(crossProduct != null && !crossProduct.isEmpty()){
+			this.reducedStart = crossProduct.get(0); //first = {s, s, ..., s}
+			this.reducedTerminal = crossProduct.get(crossProduct.size() - 1); //last = {t, t, ..., t}
+		}
+		
 		for(Node n : crossProduct){
 			gReduced.addNode(n);
 		}
@@ -173,7 +181,7 @@ public class KPathFinderImplementation implements KPathFinder {
 	}
 	
 	public List<Node> crossProduct(int k, List<Node> a, List<Node> b){
-		if(k-1 == 0) return a;
+		if(k == 0) return a;
 		else
 		{
 			LinkedList<Node> crossProduct = new LinkedList<Node>();
@@ -181,6 +189,7 @@ public class KPathFinderImplementation implements KPathFinder {
 				for(Node vj : b){
 					Node product = nodeProduct(vi, vj);
 					crossProduct.add(product);
+					
 				}
 			}
 			return crossProduct(k-1, crossProduct, b);

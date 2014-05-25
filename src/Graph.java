@@ -130,7 +130,7 @@ public class Graph implements IGraph {
             if(key.getLabel() instanceof List<?> && key.getLabel() != null){
             	List<Node> nodeList = (List<Node>) key.getLabel();
             	for(Node n : nodeList){
-            		label += n.getLabel() + " ";
+            		label += labelToString(n.getLabel()) + " ";
             	}
             }
             else{
@@ -139,7 +139,7 @@ public class Graph implements IGraph {
             
             s.append(label + ": ");
             for (Node w : adjacentList) {
-                s.append(w.getLabel().toString() + " ");
+                s.append(labelToString(w.getLabel()) + " ");
             }
             s.append(NEWLINE);
         }
@@ -153,10 +153,12 @@ public class Graph implements IGraph {
 		}
 		
 		String sLabel = labelToString(n.getLabel());
-		
-		System.out.println("Edges: ");
-		for(Edge e : adjEdges){
-			System.out.println(edgeToString(e));
+	
+		if(adjEdges != null){
+			System.out.println("Edges: ");
+			for(Edge e : adjEdges){
+				System.out.println(edgeToString(e));
+			}
 		}
 		
 		System.out.println("");
