@@ -157,22 +157,18 @@ public class KPathFinderImplementation implements KPathFinder {
 			gReduced.addNode(n);
 		}
 		
-		//TODO add edges
 		for(Node vi : gReduced.getNodes()){
 			for(Node vj : gReduced.getNodes()){
 				//get node that starts a path
 				Edge e = new Edge(vi, vj);
 				
 				//verify conditions
-				boolean validEdge = verifyConditions(e, gPlusST, sourcesMap, terminalsMap); // edgeSatisfiesFirstCondition(e, gPlusST);
+				boolean validEdge = verifyConditions(e, gPlusST, sourcesMap, terminalsMap);
 				
-				if(validEdge){//&& second && third){
+				if(validEdge){
 					//add edge to g-reduced
 					gReduced.addEdge(e);
 					System.out.println(Graph.edgeToString(e) + " added to g-reduced");
-				}
-				else{
-					//System.out.println(Graph.edgeToString(e) + " conditions are: " + first + "\t" + second + "\t" + third);
 				}
 			}
 		}
