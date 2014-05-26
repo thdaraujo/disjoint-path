@@ -185,9 +185,7 @@ public class KPathFinderImplementation implements KPathFinder {
 				Node p = path.pop();
 				System.out.println(Graph.labelToString(p.getLabel()));
 			}		
-		}
-		
-		
+		}	
 		return gReduced;
 	}
 	
