@@ -237,8 +237,6 @@ public class KPathFinderImplementation implements KPathFinder {
 		List<Node> vNodes = (List<Node>) e.getFrom().getLabel(),
 				wNodes = (List<Node>) e.getTo().getLabel();
 		
-		boolean firstCondition = false;
-		
 		if(vNodes.size() != wNodes.size()) return false;
 		for(int i = 0; i < vNodes.size(); i++){
 			Node v_i = vNodes.get(i),
@@ -247,17 +245,18 @@ public class KPathFinderImplementation implements KPathFinder {
 			Edge e_i = new Edge(v_i, w_i);
 			
 			//first condition
-			if(gPlusST.containsEdge(e_i)) firstCondition = true;
+			if(gPlusST.containsEdge(e_i)){ 
+				//second condition
+				if(v_i == S && !sources.containsKey(w_i)) return false;
+				if(w_i == T && !terminals.containsKey(v_i)) return false;
+				//third condition (negation)
+				//if (wi = T or f(wi) > max(all in v) then true
+				if(!(w_i == T || getOrder(e.getTo()) > getOrder(e.getFrom()))) return false;
 				
-			//second condition
-			if(v_i == S && !sources.containsKey(w_i)) return false;
-			if(w_i == T && !terminals.containsKey(v_i)) return false;
-			//third condition (negation)
-			//if not (wi = T or f(wi) > max(all in v) then false
-			if(!(w_i == T || getOrder(e.getTo()) > getOrder(e.getFrom()))) return false;
-		
+				return true;
+			}
 		}
-		return firstCondition;
+		return false;
 	}
 	
 	/*
