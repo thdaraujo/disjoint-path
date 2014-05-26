@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 import path.KPathFinder;
 
@@ -172,6 +173,20 @@ public class KPathFinderImplementation implements KPathFinder {
 				}
 			}
 		}
+		
+		//path
+		BreadthFirstDirectedPaths bfs = new BreadthFirstDirectedPaths(gReduced, this.reducedStart);
+		boolean hasKpaths = bfs.hasPathTo(this.reducedTerminal);
+		
+		System.out.println("has k paths = " + hasKpaths);
+		if(hasKpaths){
+			Stack<Node> path = bfs.pathTo(this.reducedTerminal);
+			while(!path.isEmpty()){
+				Node p = path.pop();
+				System.out.println(Graph.labelToString(p.getLabel()));
+			}		
+		}
+		
 		
 		return gReduced;
 	}
