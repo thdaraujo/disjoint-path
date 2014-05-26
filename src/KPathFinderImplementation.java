@@ -20,6 +20,7 @@ import path.KPathFinder;
 public class KPathFinderImplementation implements KPathFinder {
 	
 	private LinkedList<Node> topologicalOrder;
+	private HashMap<Node, Integer> fOrder;
 	private Node S;
 	private Node T;
 	private Node reducedStart;
@@ -27,6 +28,7 @@ public class KPathFinderImplementation implements KPathFinder {
 	
 	public KPathFinderImplementation(){
 		this.topologicalOrder = new LinkedList<Node>();
+		this.fOrder = new HashMap<Node, Integer>();
 		this.S = new Node("s"); //source
 		this.T = new Node("t"); //terminal
 	}
@@ -128,7 +130,7 @@ public class KPathFinderImplementation implements KPathFinder {
 		
 		HashMap<Node, Node> sourcesMap = new HashMap<Node, Node>();
 		HashMap<Node, Node> terminalsMap = new HashMap<Node, Node>();
-		
+				
 		for(Node n : sources){
 			sourcesMap.put(n, n);
 		}
@@ -136,6 +138,8 @@ public class KPathFinderImplementation implements KPathFinder {
 		for(Node n : terminals){
 			terminalsMap.put(n, n);
 		}
+		
+		putAllInOrder(topologicalOrder);
 		
 		Graph gReduced = new Graph();
 		
@@ -192,19 +196,23 @@ public class KPathFinderImplementation implements KPathFinder {
 	}
 	
 	public Node nodeProduct(Node a, Node b){
+		Node n;
 		if(a.getLabel() instanceof List<?>){
 			List<Node> label = new LinkedList<Node>();
 			List<Node> nodeList = (List<Node>)a.getLabel();
 			label.addAll(nodeList);
 			label.add(b);
-			return new Node(label);
+			n = new Node(label);
+			
 		}
 		else{
 			List<Node> label = new LinkedList<Node>();
 			label.add(a);
 			label.add(b);
-			return new Node(label);
+			n = new Node(label);
 		}
+		putInOrder(n, Math.max(getOrder(a), getOrder(b)));
+		return n;
 	}
 	
 	
@@ -229,6 +237,8 @@ public class KPathFinderImplementation implements KPathFinder {
 		List<Node> vNodes = (List<Node>) e.getFrom().getLabel(),
 				wNodes = (List<Node>) e.getTo().getLabel();
 		
+		boolean firstCondition = false;
+		
 		if(vNodes.size() != wNodes.size()) return false;
 		for(int i = 0; i < vNodes.size(); i++){
 			Node v_i = vNodes.get(i),
@@ -237,17 +247,17 @@ public class KPathFinderImplementation implements KPathFinder {
 			Edge e_i = new Edge(v_i, w_i);
 			
 			//first condition
-			if(gPlusST.containsEdge(e_i)){
-				//second condition
-				if(v_i == S && !sources.containsKey(w_i)) return false;
-				if(w_i == T && !terminals.containsKey(v_i)) return false;
-				//third condition (negation)
-				if(!(w_i == T || f(w_i, topologicalOrder) > f(v_i, topologicalOrder))) return false;
+			if(gPlusST.containsEdge(e_i)) firstCondition = true;
 				
-				return true;
-			}
+			//second condition
+			if(v_i == S && !sources.containsKey(w_i)) return false;
+			if(w_i == T && !terminals.containsKey(v_i)) return false;
+			//third condition (negation)
+			//if not (wi = T or f(wi) > max(all in v) then false
+			if(!(w_i == T || getOrder(e.getTo()) > getOrder(e.getFrom()))) return false;
+		
 		}
-		return false;
+		return firstCondition;
 	}
 	
 	/*
@@ -288,5 +298,25 @@ public class KPathFinderImplementation implements KPathFinder {
 	 */
 	private int f(Node n, List<Node> topologicalOrder){
 		return topologicalOrder.indexOf(n);
+	}
+	
+	private int getOrder(Node n){
+		if(this.fOrder.containsKey(n)){
+			return this.fOrder.get(n);
+		}
+		else{
+			System.out.println("key not found in fOrder!");
+			return -1;
+		}
+	}
+	
+	private void putAllInOrder(List<Node> topologicalOrder)
+	{
+		for(int i = 0; i < topologicalOrder.size(); i++){
+			this.fOrder.put(topologicalOrder.get(i), i);
+		}
+	}
+	private void putInOrder(Node n, int value){
+		this.fOrder.put(n, value);
 	}
 }
