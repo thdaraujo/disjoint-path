@@ -188,12 +188,15 @@ public class GraphGenerator {
         ti.add(n06);
         si.add(n01);
         ti.add(n02);
+        
+        /*
         si.add(n16);
         ti.add(n19);
         si.add(n09);
         ti.add(n13);
         si.add(n11);
         ti.add(n15);
+        */
         
         return 5;
 	}

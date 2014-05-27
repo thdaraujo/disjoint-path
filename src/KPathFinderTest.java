@@ -30,9 +30,9 @@ public class KPathFinderTest {
 		
 		//runTestFromExample();
 		
-		runTestFromSantiago();
+		//runTestFromSantiago();
 		
-		//runTestBigGraph();
+		runTestBigGraph();
 		
 	}
 	
@@ -59,8 +59,15 @@ public class KPathFinderTest {
 		System.out.println("");
 		
 		Collection<List<Node>> paths = new ArrayList();
-		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gOriginal, sources, terminals, paths);
+		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gReducedObtained, sources, terminals, paths);
 		System.out.println("thereExistsKPaths = " + thereExistsKPaths);
+		
+		for(List<Node> path : paths){
+			for(Node n : path){
+				System.out.print(Graph.labelToString(n.getLabel()) + "->");
+			}
+			System.out.println("");
+		}
 		
 	}
 	
@@ -90,8 +97,15 @@ public class KPathFinderTest {
 		System.out.println("");
 		
 		Collection<List<Node>> paths = new ArrayList();
-		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gOriginal, s, t, paths);
+		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gReducedObtained, s, t, paths);
 		System.out.println("thereExistsKPaths = " + thereExistsKPaths);
+		
+		for(List<Node> path : paths){
+			for(Node n : path){
+				System.out.print(Graph.labelToString(n.getLabel()) + "->");
+			}
+			System.out.println("");
+		}
 	}
 	
 	public static void runTestBigGraph(){
@@ -120,8 +134,15 @@ public class KPathFinderTest {
 		System.out.println("");
 		
 		Collection<List<Node>> paths = new ArrayList();
-		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gOriginal, s, t, paths);
+		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gReducedObtained, s, t, paths);
 		System.out.println("thereExistsKPaths = " + thereExistsKPaths);
+		
+		for(List<Node> path : paths){
+			for(Node n : path){
+				System.out.print(Graph.labelToString(n.getLabel()) + "->");
+			}
+			System.out.println("");
+		}
 	}
 	
 	public static LinkedList<Node> getSources(LinkedList<Node> nodes){

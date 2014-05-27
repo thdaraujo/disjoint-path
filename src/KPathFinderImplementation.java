@@ -4,11 +4,13 @@ import graph.Node;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
 import path.KPathFinder;
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 /**
  * 
@@ -26,6 +28,7 @@ public class KPathFinderImplementation implements KPathFinder {
 	private Node reducedStart;
 	private Node reducedTerminal;
 	private HashMap<Node, LinkedList<Node>> mapNodesGraphSTToReduced; //maps a node from graphST to a list of nodes from the reduced graph
+	private Graph GReduced;
 	
 	public KPathFinderImplementation() {
 		this.topologicalOrder = new LinkedList<Node>();
@@ -33,6 +36,7 @@ public class KPathFinderImplementation implements KPathFinder {
 		this.S = new Node("s"); // source
 		this.T = new Node("t"); // terminal
 		this.mapNodesGraphSTToReduced = new HashMap<Node, LinkedList<Node>>();
+		this.GReduced = new Graph();
 	}
 
 	/*
@@ -42,20 +46,19 @@ public class KPathFinderImplementation implements KPathFinder {
 	 * java.util.List)
 	 */
 	@Override
-	public IGraph obtainReduction(IGraph G, List<Node> sources,
-			List<Node> terminals) {
+	public IGraph obtainReduction(IGraph G, List<Node> sources, List<Node> terminals) {
 		Graph GOriginal = new Graph(G);
 		Graph GPlusST = this.getGraphPlusSourceAndTerminal(GOriginal, this.S,
 				this.T, sources, terminals);
 
-		List<Node> topologicalOrder = this
-				.getTopoligcalOrderToUseInReduction(G);
+		List<Node> topologicalOrder = this.getTopoligcalOrderToUseInReduction(G);
 
 		Graph GReduced = this.getReducedGraph(GOriginal, GPlusST,
 				topologicalOrder, new LinkedList<Node>(sources),
 				new LinkedList<Node>(terminals));
 
-		return GReduced;
+		this.GReduced = GReduced;
+		return this.GReduced;
 	}
 
 	/*
@@ -63,12 +66,20 @@ public class KPathFinderImplementation implements KPathFinder {
 	 * 
 	 * @see path.KPathFinder#thereExistsKDisjointPaths(graph.IGraph,
 	 * java.util.List, java.util.List, java.util.Collection)
+	 * 
+	 * G = reduced graph (GReduced) obtained by the method "obtainReduction".
 	 */
 	@Override
-	public boolean thereExistsKDisjointPaths(IGraph G, List<Node> sources,
+	public boolean thereExistsKDisjointPaths(IGraph gReduced, List<Node> sources,
 			List<Node> terminals, Collection<List<Node>> kPaths) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		LinkedList<LinkedList<Node>> pathCollection = getKDisjointPaths(this.GReduced, sources.size());
+		
+		for(LinkedList<Node> pathList : pathCollection){
+			kPaths.add(pathList);
+		}
+		
+		return kPaths.size() > 0;
 	}
 
 	@Override
@@ -205,21 +216,34 @@ public class KPathFinderImplementation implements KPathFinder {
 	}
 	
 	/*
-	 * get k disjoint paths for reduced graph
+	 * get k disjoint paths for reduced graph using BFS.
 	 */
-	private void getKDisjointPaths(Graph gReduced) {
+	private LinkedList<LinkedList<Node>> getKDisjointPaths(IGraph gReduced, int k) {
+		LinkedList<LinkedList<Node>> collection = new LinkedList<LinkedList<Node>>();
+		for(int i = 0; i < k; i++){
+			collection.add(new LinkedList<Node>());
+		}
+		
 		// path
-		BreadthFirstDirectedPaths bfs = new BreadthFirstDirectedPaths(gReduced,
-				this.reducedStart);
+		BreadthFirstDirectedPaths bfs = new BreadthFirstDirectedPaths(gReduced, this.reducedStart);
 		boolean hasKpaths = bfs.hasPathTo(this.reducedTerminal);
-
-		System.out.println("has k paths = " + hasKpaths);
+	
 		if (hasKpaths) {
+			System.out.println("has k paths = " + hasKpaths);
 			Stack<Node> path = bfs.pathTo(this.reducedTerminal);
-			while (!path.isEmpty()) {
+			while(!path.isEmpty()){
 				Node p = path.pop();
-				System.out.println(Graph.labelToString(p.getLabel()));
+				List<Node> nodeList = getNodeList(p);
+				for(int i = 0; i < k; i++){
+					Node pathNode = nodeList.get(i);
+					if(pathNode != this.S && pathNode != this.T && !collection.get(i).contains(pathNode)){
+						collection.get(i).add(pathNode);
+					}
+				}
 			}
+		}
+		else{
+			System.out.println("k paths not found!");
 		}
 		
 		/* TODO usar no add edges
@@ -233,6 +257,13 @@ public class KPathFinderImplementation implements KPathFinder {
 			System.out.println("");
 		}
 		*/
+		
+		return collection;
+	}
+
+	private List<Node> getNodeList(Node p) {
+		List<Node> nodeList = (List<Node>)p.getLabel();
+		return nodeList != null? nodeList : new LinkedList<Node>();
 	}
 
 	/*
@@ -242,7 +273,7 @@ public class KPathFinderImplementation implements KPathFinder {
 		Node n;
 		if (a.getLabel() instanceof List<?>) {
 			List<Node> label = new LinkedList<Node>();
-			List<Node> nodeList = (List<Node>) a.getLabel();
+			List<Node> nodeList = getNodeList(a);
 			label.addAll(nodeList);
 			label.add(b);
 			n = new Node(label);
@@ -327,7 +358,7 @@ public class KPathFinderImplementation implements KPathFinder {
 			int wOrder = getOrder(w_i);
 			
 			if (to.getLabel() instanceof List<?>) {
-				List<Node> nodeList = (List<Node>) to.getLabel();
+				List<Node> nodeList = getNodeList(to);
 				int diff = 0;
 				
 				for(Node n : nodeList){
