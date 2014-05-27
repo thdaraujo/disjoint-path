@@ -48,8 +48,7 @@ public class KPathFinderImplementation implements KPathFinder {
 	@Override
 	public IGraph obtainReduction(IGraph G, List<Node> sources, List<Node> terminals) {
 		Graph GOriginal = new Graph(G);
-		Graph GPlusST = this.getGraphPlusSourceAndTerminal(GOriginal, this.S,
-				this.T, sources, terminals);
+		Graph GPlusST = this.getGraphPlusSourceAndTerminal(GOriginal, this.S, this.T, sources, terminals);
 
 		List<Node> topologicalOrder = this.getTopoligcalOrderToUseInReduction(G);
 

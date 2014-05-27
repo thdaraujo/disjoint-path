@@ -97,7 +97,6 @@ public class GraphGenerator {
 		graph.addNode(n4);
 		graph.addNode(n5);
 		
-		
 		graph.addEdge(e1);
 		graph.addEdge(e2);
 		graph.addEdge(e3);
