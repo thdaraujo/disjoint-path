@@ -25,12 +25,14 @@ public class KPathFinderImplementation implements KPathFinder {
 	private Node T;
 	private Node reducedStart;
 	private Node reducedTerminal;
-
+	private HashMap<Node, LinkedList<Node>> mapNodesGraphSTToReduced; //maps a node from graphST to a list of nodes from the reduced graph
+	
 	public KPathFinderImplementation() {
 		this.topologicalOrder = new LinkedList<Node>();
 		this.fOrder = new HashMap<Node, Integer>();
 		this.S = new Node("s"); // source
 		this.T = new Node("t"); // terminal
+		this.mapNodesGraphSTToReduced = new HashMap<Node, LinkedList<Node>>();
 	}
 
 	/*
@@ -155,12 +157,7 @@ public class KPathFinderImplementation implements KPathFinder {
 
 		if (crossProduct != null && !crossProduct.isEmpty()) {
 			this.reducedStart = crossProduct.get(0); // first = {s, s, ..., s}
-			this.reducedTerminal = crossProduct.get(crossProduct.size() - 1); // last
-																				// =
-																				// {t,
-																				// t,
-																				// ...,
-																				// t}
+			this.reducedTerminal = crossProduct.get(crossProduct.size() - 1); // last = {t, t, ..., t}
 		}
 
 		for (Node n : crossProduct) {
@@ -198,6 +195,19 @@ public class KPathFinderImplementation implements KPathFinder {
 				System.out.println(Graph.labelToString(p.getLabel()));
 			}
 		}
+		
+		/* TODO usar no add edges
+		System.out.println("adj map ");
+		for(Node n : this.mapNodesGraphSTToReduced.keySet()){
+			List<Node> adj = this.mapNodesGraphSTToReduced.get(n);
+			System.out.print(Graph.labelToString(n.getLabel()) + " --> ");
+			for(Node i : adj){
+				System.out.print(Graph.labelToString(i.getLabel()) + " ");
+			}
+			System.out.println("");
+		}
+		*/
+	
 		return gReduced;
 	}
 
@@ -231,6 +241,7 @@ public class KPathFinderImplementation implements KPathFinder {
 			n = new Node(label);
 		}
 		putInOrder(n, Math.max(getOrder(a), getOrder(b)));
+		mapReducedNode(b, n);
 		return n;
 	}
 
@@ -357,5 +368,12 @@ public class KPathFinderImplementation implements KPathFinder {
 
 	private void putInOrder(Node n, int value) {
 		this.fOrder.put(n, value);
+	}
+	
+	private void mapReducedNode(Node n, Node adj){
+		if(!this.mapNodesGraphSTToReduced.containsKey(n)){
+			this.mapNodesGraphSTToReduced.put(n, new LinkedList<Node>());
+		}
+		this.mapNodesGraphSTToReduced.get(n).add(adj);
 	}
 }
