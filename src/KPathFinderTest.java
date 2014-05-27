@@ -28,7 +28,11 @@ public class KPathFinderTest {
 	public static void main(String[] args) {
 		printProjectName();
 		
-		runTestFromExample();
+		//runTestFromExample();
+		
+		runTestFromSantiago();
+		
+		//runTestBigGraph();
 		
 	}
 	
@@ -58,6 +62,66 @@ public class KPathFinderTest {
 		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gOriginal, sources, terminals, paths);
 		System.out.println("thereExistsKPaths = " + thereExistsKPaths);
 		
+	}
+	
+	public static void runTestFromSantiago(){
+		
+		System.out.println("Teste Santiago");
+		Graph gOriginal = new Graph();
+		
+		List<Node> s = new LinkedList<>();
+		List<Node> t = new LinkedList<>();
+		
+		GraphGenerator.santiagoTest(gOriginal, s, t);
+		
+		System.out.println(gOriginal.toString());
+		
+		KPathFinderImplementation kPathFinder = new KPathFinderImplementation();
+		
+		IGraph gReducedObtained = kPathFinder.obtainReduction(gOriginal, s, t);
+		System.out.println(gReducedObtained.toString());
+		
+		List<Node> topologicalOrder = kPathFinder.getTopoligcalOrderToUseInReduction(gOriginal);
+		
+		System.out.print("Ordem topologica: ");
+		for(Node n : topologicalOrder){
+			System.out.print(n.getLabel() + " ");
+		}
+		System.out.println("");
+		
+		Collection<List<Node>> paths = new ArrayList();
+		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gOriginal, s, t, paths);
+		System.out.println("thereExistsKPaths = " + thereExistsKPaths);
+	}
+	
+	public static void runTestBigGraph(){
+		
+		System.out.println("Teste Big Graph");
+		Graph gOriginal = new Graph();
+		
+		List<Node> s = new LinkedList<>();
+		List<Node> t = new LinkedList<>();
+		
+		GraphGenerator.disjointBigGraph(gOriginal, s, t);
+		
+		System.out.println(gOriginal.toString());
+		
+		KPathFinderImplementation kPathFinder = new KPathFinderImplementation();
+		
+		IGraph gReducedObtained = kPathFinder.obtainReduction(gOriginal, s, t);
+		System.out.println(gReducedObtained.toString());
+		
+		List<Node> topologicalOrder = kPathFinder.getTopoligcalOrderToUseInReduction(gOriginal);
+		
+		System.out.print("Ordem topologica: ");
+		for(Node n : topologicalOrder){
+			System.out.print(n.getLabel() + " ");
+		}
+		System.out.println("");
+		
+		Collection<List<Node>> paths = new ArrayList();
+		boolean thereExistsKPaths = kPathFinder.thereExistsKDisjointPaths(gOriginal, s, t, paths);
+		System.out.println("thereExistsKPaths = " + thereExistsKPaths);
 	}
 	
 	public static LinkedList<Node> getSources(LinkedList<Node> nodes){

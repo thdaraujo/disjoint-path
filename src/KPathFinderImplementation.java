@@ -170,8 +170,7 @@ public class KPathFinderImplementation implements KPathFinder {
 				Edge e = new Edge(vi, vj);
 
 				// verify conditions
-				boolean validEdge = verifyConditions(e, gPlusST, sourcesMap,
-						terminalsMap);
+				boolean validEdge = verifyConditions(e, gPlusST, sources, terminals);
 
 				if (validEdge) {
 					// add edge to g-reduced
@@ -264,7 +263,7 @@ public class KPathFinderImplementation implements KPathFinder {
 	 * First condition: one of the edges exists on the original graph.
 	 */
 	private boolean verifyConditions(Edge e, Graph gPlusST,
-			HashMap<Node, Node> sources, HashMap<Node, Node> terminals) {
+			List<Node> sources, List<Node> terminals) {
 		List<Node> vNodes = (List<Node>) e.getFrom().getLabel(), wNodes = (List<Node>) e
 				.getTo().getLabel();
 
@@ -281,8 +280,9 @@ public class KPathFinderImplementation implements KPathFinder {
 			if (v_i != w_i) {
 				diff++;
 				boolean firstCondition = edgeSatisfiesFirstCondition(e_i,
-						gPlusST), secondCondition = edgeSatisfiesSecondCondition(
-						v_i, w_i, this.S, this.T, sources, terminals), thirdCondition = edgeSatisfiesThirdCondition(
+						gPlusST), secondCondition = edgeSatisfiesSecondCondition(v_i, w_i, 
+								this.S, this.T, 
+								sources, terminals, i), thirdCondition = edgeSatisfiesThirdCondition(
 						v_i, w_i, from, to, this.T);
 
 				if (!(firstCondition && secondCondition && thirdCondition))
@@ -304,14 +304,13 @@ public class KPathFinderImplementation implements KPathFinder {
 	}
 
 	/*
-	 * Second condition: from is s and to is a source or to is t and from is
-	 * terminal
+	 * Second condition: v_i is S and w_i = sources(i) or w_i is T and v_i = terminals(i)
 	 */
 	private boolean edgeSatisfiesSecondCondition(Node v_i, Node w_i, Node S,
-			Node T, HashMap<Node, Node> sources, HashMap<Node, Node> terminals) {
-		if (v_i == S && !sources.containsKey(w_i)) {
+			Node T, List<Node> sources, List<Node> terminals, int index) {
+		if (v_i == S && sources.get(index) != w_i){ //!sources.containsKey(w_i)) {
 			return false;
-		} else if (w_i == T && !terminals.containsKey(v_i)) {
+		} else if (w_i == T && terminals.get(index) != v_i){ //!terminals.containsKey(v_i)) {
 			return false;
 		} else {
 			return true;
@@ -329,14 +328,22 @@ public class KPathFinderImplementation implements KPathFinder {
 		else { 
 			// f(w_i) > f(all w_j in to where i != j)
 			// f(w_i) max(f(to))
+			int max = -1;
+			int wOrder = getOrder(w_i);
+			
 			if (to.getLabel() instanceof List<?>) {
 				List<Node> nodeList = (List<Node>) to.getLabel();
 				int diff = 0;
+				
 				for(Node n : nodeList){
+					int nOrder = getOrder(n);
+					
 					if(n == w_i) diff++;
-					else if(getOrder(w_i) <= getOrder(n)) return false;
+					else{
+						if(nOrder > max) max = nOrder;
+					}
 				}
-				return diff == 1;
+				return wOrder > max && diff == 1;
 			}
 			else{
 				return true;
