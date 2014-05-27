@@ -20,7 +20,7 @@ import path.KPathFinder;
 public class KPathFinderImplementation implements KPathFinder {
 
 	private LinkedList<Node> topologicalOrder;
-	private HashMap<Node, Integer> fOrder;
+	private HashMap<Node, Integer> fOrder; //position of node (or the max position) in the topological order.
 	private Node S;
 	private Node T;
 	private Node reducedStart;
@@ -109,20 +109,17 @@ public class KPathFinderImplementation implements KPathFinder {
 		gPlusST.addNode(T);
 
 		if (sources.size() != terminals.size()) {
-			System.out
-					.println("sources and terminals should have the same size!");
+			System.out.println("sources and terminals should have the same size!");
 			// return gPlusST;
 		}
 
 		// S points to every source of G
-		// S -> sources
 		for (Node source : sources) {
 			Edge StoSource = new Edge(S, source);
 			gPlusST.addEdge(StoSource);
 		}
 
 		// Every terminal in G points to T
-		// terminal -> T
 		for (Node terminal : terminals) {
 			Edge terminalToT = new Edge(terminal, T);
 			gPlusST.addEdge(terminalToT);
@@ -134,23 +131,27 @@ public class KPathFinderImplementation implements KPathFinder {
 	public Graph getReducedGraph(Graph gOriginal, Graph gPlusST,
 			List<Node> topologicalOrder, List<Node> sources,
 			List<Node> terminals) {
-
-		HashMap<Node, Node> sourcesMap = new HashMap<Node, Node>();
-		HashMap<Node, Node> terminalsMap = new HashMap<Node, Node>();
-
-		for (Node n : sources) {
-			sourcesMap.put(n, n);
-		}
-
-		for (Node n : terminals) {
-			terminalsMap.put(n, n);
-		}
-
+	
+		//f(v) for all v
 		putAllInOrder(topologicalOrder);
 
 		Graph gReduced = new Graph();
 
 		// permutation v x v
+		addNodesByPermutation(topologicalOrder, sources, gReduced);
+
+		//add edges (naive version)
+		addEdgesNaiveVersion(gPlusST, sources, terminals, gReduced);
+
+		return gReduced;
+	}
+
+	/*
+	 * Add nodes by permutation.
+	 * Not every node is needed for the solution, but we create them anyway.
+	 */
+	private void addNodesByPermutation(List<Node> topologicalOrder,
+			List<Node> sources, Graph gReduced) {
 		int k = sources.size();
 		List<Node> crossProduct = new LinkedList<Node>();
 		crossProduct = crossProduct(k, topologicalOrder, topologicalOrder);
@@ -163,24 +164,50 @@ public class KPathFinderImplementation implements KPathFinder {
 		for (Node n : crossProduct) {
 			gReduced.addNode(n);
 		}
-
+	}
+	
+	/*
+	 * Naive version: every combination of 2-nodes in gReduced is a candidate for the addition of an edge.
+	 * If the edge satisfies 3 conditions for its existance, then it is added to gReduced.
+	 */
+	private void addEdgesNaiveVersion(Graph gPlusST, List<Node> sources,
+			List<Node> terminals, Graph gReduced) {
 		for (Node vi : gReduced.getNodes()) {
 			for (Node vj : gReduced.getNodes()) {
 				// get node that starts a path
 				Edge e = new Edge(vi, vj);
-
 				// verify conditions
 				boolean validEdge = verifyConditions(e, gPlusST, sources, terminals);
 
-				if (validEdge) {
-					// add edge to g-reduced
+				if (validEdge) { // add edge to g-reduced
 					gReduced.addEdge(e);
-					System.out.println(Graph.edgeToString(e)
-							+ " added to g-reduced");
 				}
 			}
 		}
+	}
 
+	/*
+	 * cross product between topological orders with depth of recursion equals k.
+	 */
+	public List<Node> crossProduct(int k, List<Node> a, List<Node> b) {
+		if (k - 1 == 0)
+			return a;
+		else {
+			LinkedList<Node> crossProduct = new LinkedList<Node>();
+			for (Node vi : a) {
+				for (Node vj : b) {
+					Node product = nodeProduct(vi, vj);
+					crossProduct.add(product);
+				}
+			}
+			return crossProduct(k - 1, crossProduct, b);
+		}
+	}
+	
+	/*
+	 * get k disjoint paths for reduced graph
+	 */
+	private void getKDisjointPaths(Graph gReduced) {
 		// path
 		BreadthFirstDirectedPaths bfs = new BreadthFirstDirectedPaths(gReduced,
 				this.reducedStart);
@@ -206,25 +233,11 @@ public class KPathFinderImplementation implements KPathFinder {
 			System.out.println("");
 		}
 		*/
-	
-		return gReduced;
 	}
 
-	public List<Node> crossProduct(int k, List<Node> a, List<Node> b) {
-		if (k - 1 == 0)
-			return a;
-		else {
-			LinkedList<Node> crossProduct = new LinkedList<Node>();
-			for (Node vi : a) {
-				for (Node vj : b) {
-					Node product = nodeProduct(vi, vj);
-					crossProduct.add(product);
-				}
-			}
-			return crossProduct(k - 1, crossProduct, b);
-		}
-	}
-
+	/*
+	 * Cross product of node {a} x {b}
+	 */
 	public Node nodeProduct(Node a, Node b) {
 		Node n;
 		if (a.getLabel() instanceof List<?>) {
@@ -244,28 +257,13 @@ public class KPathFinderImplementation implements KPathFinder {
 		return n;
 	}
 
-	private Edge getReducedEdge(List<Node> nodesFrom, List<Node> nodesTo) {
-		if (nodesFrom.size() != nodesTo.size())
-			return null;
-
-		int size = nodesFrom.size();
-
-		for (int i = 0; i < size; i++) {
-			Node from = nodesFrom.get(i);
-			Node to = nodesTo.get(i);
-			if (from != to)
-				return new Edge(from, to);
-		}
-		return null;
-	}
-
 	/*
-	 * First condition: one of the edges exists on the original graph.
+	 * Verifies three conditions for the existence of an edge between two nodes on the reduced Graph.
 	 */
 	private boolean verifyConditions(Edge e, Graph gPlusST,
 			List<Node> sources, List<Node> terminals) {
-		List<Node> vNodes = (List<Node>) e.getFrom().getLabel(), wNodes = (List<Node>) e
-				.getTo().getLabel();
+		List<Node> vNodes = (List<Node>) e.getFrom().getLabel(), 
+				   wNodes = (List<Node>) e.getTo().getLabel();
 
 		int diff = 0;
 		Node from = e.getFrom(), to = e.getTo();
@@ -279,11 +277,9 @@ public class KPathFinderImplementation implements KPathFinder {
 			Edge e_i = new Edge(v_i, w_i);
 			if (v_i != w_i) {
 				diff++;
-				boolean firstCondition = edgeSatisfiesFirstCondition(e_i,
-						gPlusST), secondCondition = edgeSatisfiesSecondCondition(v_i, w_i, 
-								this.S, this.T, 
-								sources, terminals, i), thirdCondition = edgeSatisfiesThirdCondition(
-						v_i, w_i, from, to, this.T);
+				boolean firstCondition  = edgeSatisfiesFirstCondition(e_i, gPlusST), 
+						secondCondition = edgeSatisfiesSecondCondition(v_i, w_i, this.S, this.T, sources, terminals, i), 
+						thirdCondition  = edgeSatisfiesThirdCondition(v_i, w_i, from, to, this.T);
 
 				if (!(firstCondition && secondCondition && thirdCondition))
 					return false;
@@ -326,8 +322,7 @@ public class KPathFinderImplementation implements KPathFinder {
 		if (w_i == T)
 			return true;
 		else { 
-			// f(w_i) > f(all w_j in to where i != j)
-			// f(w_i) max(f(to))
+			// f(w_i) has the max order inside node `to`.
 			int max = -1;
 			int wOrder = getOrder(w_i);
 			
@@ -337,7 +332,6 @@ public class KPathFinderImplementation implements KPathFinder {
 				
 				for(Node n : nodeList){
 					int nOrder = getOrder(n);
-					
 					if(n == w_i) diff++;
 					else{
 						if(nOrder > max) max = nOrder;
@@ -352,12 +346,15 @@ public class KPathFinderImplementation implements KPathFinder {
 	}
 
 	/*
-	 * Get position of node in the topological order
+	 * Gets position of node in the topological order
 	 */
 	private int f(Node n, List<Node> topologicalOrder) {
 		return topologicalOrder.indexOf(n);
 	}
 
+	/*
+	 * gets position of node in fOrder.
+	 */
 	private int getOrder(Node n) {
 		if (this.fOrder.containsKey(n)) {
 			return this.fOrder.get(n);
@@ -367,16 +364,24 @@ public class KPathFinderImplementation implements KPathFinder {
 		}
 	}
 
+	/*
+	 * Saves the order only once.
+	 */
+	private void putInOrder(Node n, int value) {
+		this.fOrder.put(n, value);
+	}
+
 	private void putAllInOrder(List<Node> topologicalOrder) {
 		for (int i = 0; i < topologicalOrder.size(); i++) {
 			this.fOrder.put(topologicalOrder.get(i), i);
 		}
 	}
-
-	private void putInOrder(Node n, int value) {
-		this.fOrder.put(n, value);
-	}
 	
+	/*
+	 * Maps a node from the original graph to a list of nodes in the reduced graph
+	 * when the original graph has an edge to the nodes present in adj.
+	 * We use it to minimize the set of candidate nodes for the addition of edges.
+	 */
 	private void mapReducedNode(Node n, Node adj){
 		if(!this.mapNodesGraphSTToReduced.containsKey(n)){
 			this.mapNodesGraphSTToReduced.put(n, new LinkedList<Node>());
