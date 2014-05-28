@@ -153,6 +153,8 @@ public class KPathFinderImplementation implements KPathFinder {
 		//add edges (naive version)
 		addEdgesNaiveVersion(gPlusST, sources, terminals, gReduced);
 
+		//faster version
+		//addEdgesByAdjacencyVersion(topologicalOrder, gPlusST, mapNodesGraphSTToReduced, gReduced, S, sources, terminals);
 		return gReduced;
 	}
 
@@ -182,6 +184,9 @@ public class KPathFinderImplementation implements KPathFinder {
 	 */
 	private void addEdgesNaiveVersion(Graph gPlusST, List<Node> sources,
 			List<Node> terminals, Graph gReduced) {
+		
+		System.out.println("addEdgesNaiveVersion");
+		
 		for (Node vi : gReduced.getNodes()) {
 			for (Node vj : gReduced.getNodes()) {
 				// get node that starts a path
@@ -195,6 +200,51 @@ public class KPathFinderImplementation implements KPathFinder {
 			}
 		}
 	}
+	
+	/*
+	 * Faster version: nodes mapped by adjacency are candidates for the addition of an edge.
+	 * We map v nodes from the original graph to a list of nodes of the reduced graph.
+	 * Then, we use the adjacent nodes of v to obtain the candidates. 
+	 */
+	private void addEdgesByAdjacencyVersion(List<Node> topologicalOrder,
+			Graph gPlusST, 
+			HashMap<Node, LinkedList<Node>> mapNodesGraphSTToReduced, 
+			Graph gReduced,
+			Node S,
+			List<Node> sources,
+			List<Node> terminals) {
+		
+		System.out.println("addEdgesByAdjacencyVersion");
+		
+		for (Node key : mapNodesGraphSTToReduced.keySet()) {
+			List<Node> keyList = mapNodesGraphSTToReduced.get(key);
+
+			for (Node adj : gPlusST.getAdjacentNodes(key)) {
+				List<Node> adjList = mapNodesGraphSTToReduced.get(adj);
+
+				for (Node v_i : keyList){
+					for (Node v_j : keyList){
+						Edge e = new Edge(v_i, v_j);
+						if(verifyConditions(e, gPlusST, sources, terminals)){
+							gReduced.addEdge(e);
+						}
+					}
+				}
+
+				for (Node v_i : keyList){
+					for (Node v_j : adjList){
+						Edge e = new Edge(v_i, v_j);
+						if(verifyConditions(e, gPlusST, sources, terminals)){
+							gReduced.addEdge(e);
+						}
+					}
+				}
+			}
+		}
+
+		
+		
+	}
 
 	/*
 	 * cross product between topological orders with depth of recursion equals k.
@@ -206,7 +256,7 @@ public class KPathFinderImplementation implements KPathFinder {
 			LinkedList<Node> crossProduct = new LinkedList<Node>();
 			for (Node vi : a) {
 				for (Node vj : b) {
-					Node product = nodeProduct(vi, vj);
+					Node product = nodeProduct(vi, vj, k);
 					crossProduct.add(product);
 				}
 			}
@@ -268,7 +318,7 @@ public class KPathFinderImplementation implements KPathFinder {
 	/*
 	 * Cross product of node {a} x {b}
 	 */
-	public Node nodeProduct(Node a, Node b) {
+	public Node nodeProduct(Node a, Node b, int k) {
 		Node n;
 		if (a.getLabel() instanceof List<?>) {
 			List<Node> label = new LinkedList<Node>();
@@ -283,7 +333,9 @@ public class KPathFinderImplementation implements KPathFinder {
 			n = new Node(label);
 		}
 		putInOrder(n, Math.max(getOrder(a), getOrder(b)));
-		mapReducedNode(b, n);
+		if (k - 2 == 0){ //add on the last iteration
+			mapReducedNode(b, n);
+		}
 		return n;
 	}
 
