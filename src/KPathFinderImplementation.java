@@ -151,20 +151,10 @@ public class KPathFinderImplementation implements KPathFinder {
 		addNodesByPermutation(topologicalOrder, sources, gReduced);
 
 		//add edges (naive version)
-		addEdgesNaiveVersion(gPlusST, sources, terminals, gReduced);
+		//addEdgesNaiveVersion(gPlusST, sources, terminals, gReduced);
 
 		//faster version
-		//addEdgesByAdjacencyVersion(topologicalOrder, gPlusST, mapNodesGraphSTToReduced, gReduced, S, sources, terminals);
-		
-		System.out.println("aqui");
-		for(Node n: this.mapNodesGraphSTToReduced.keySet()){
-			System.out.print(Graph.labelToString(n.getLabel()) + " -> ");
-			for(Node j : this.mapNodesGraphSTToReduced.get(n)){
-				System.out.print(Graph.labelToString(j.getLabel()) + " -> ");
-			}
-			System.out.println("");
-		}
-		
+		addEdgesByAdjacencyVersion(topologicalOrder, gPlusST, mapNodesGraphSTToReduced, gReduced, S, sources, terminals);
 		
 		return gReduced;
 	}
@@ -236,6 +226,9 @@ public class KPathFinderImplementation implements KPathFinder {
 				for (Node v_i : keyList){
 					for (Node v_j : keyList){
 						Edge e = new Edge(v_i, v_j);
+						
+						if(gReduced.containsEdge(e)) continue; //TODO encontrar os repetidos.
+						
 						if(verifyConditions(e, gPlusST, sources, terminals)){
 							gReduced.addEdge(e);
 						}
@@ -245,16 +238,14 @@ public class KPathFinderImplementation implements KPathFinder {
 				for (Node v_i : keyList){
 					for (Node v_j : adjList){
 						Edge e = new Edge(v_i, v_j);
+						if(gReduced.containsEdge(e)) continue; //TODO encontrar os repetidos.
 						if(verifyConditions(e, gPlusST, sources, terminals)){
 							gReduced.addEdge(e);
 						}
 					}
 				}
 			}
-		}
-
-		
-		
+		}		
 	}
 
 	/*
