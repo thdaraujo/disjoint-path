@@ -155,6 +155,17 @@ public class KPathFinderImplementation implements KPathFinder {
 
 		//faster version
 		//addEdgesByAdjacencyVersion(topologicalOrder, gPlusST, mapNodesGraphSTToReduced, gReduced, S, sources, terminals);
+		
+		System.out.println("aqui");
+		for(Node n: this.mapNodesGraphSTToReduced.keySet()){
+			System.out.print(Graph.labelToString(n.getLabel()) + " -> ");
+			for(Node j : this.mapNodesGraphSTToReduced.get(n)){
+				System.out.print(Graph.labelToString(j.getLabel()) + " -> ");
+			}
+			System.out.println("");
+		}
+		
+		
 		return gReduced;
 	}
 

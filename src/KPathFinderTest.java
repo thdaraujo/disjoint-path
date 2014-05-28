@@ -28,11 +28,11 @@ public class KPathFinderTest {
 	public static void main(String[] args) {
 		printProjectName();
 		
-		//runTestFromExample();
+		runTestFromExample();
 		
 		//runTestFromSantiago();
 		
-		runTestBigGraph();
+		//runTestBigGraph();
 		
 	}
 	
