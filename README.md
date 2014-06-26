@@ -1,4 +1,5 @@
-disjoint-path
+disjoint-path finder
 =============
 
-2-disjoint path in a random graph
+finds k-edge-disjoint paths in a given graph
+
